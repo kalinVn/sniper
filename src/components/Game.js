@@ -1,5 +1,10 @@
-const requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
- window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+
+import * as PIXI from 'pixi.js';
+import {gsap, TimelineMax} from "gsap/all";
+import Sniper from "../components/Sniper.js";
+import Rocket from "../components/Rocket.js";
+import Helper from "../ui/Helper.js";
+
 class Game{
 	
 	constructor(){
@@ -7,6 +12,7 @@ class Game{
 		this._sniper;
 		this._startWindow;
 		this._canvas;
+		gsap.registerPlugin(TimelineMax);
 		
 	}
 	
@@ -14,7 +20,10 @@ class Game{
 		this.app = new PIXI.Application( {width : 960, height : 950,backgroundColor: 0x252729});
 		document.body.appendChild(this.app.view);
 		this.app.stage.interactive = true;
+	
 		this._sniper = new Sniper(this.app);
+		//this._sniper = new Sniper(this.app);
+		
 		let width = 860;
 		let x = this.app.screen.width / 2 - (width / 2 );
 		let propStartWindow = {
@@ -60,22 +69,43 @@ class Game{
 		this._startWindow.addChild(btn);
 		btn.x = this._startWindow.width/2 - btn.width/2;
 		btn.y = this._startWindow.height/2 - btn.height/2;
-		btn.on('pointerdown', function(){
-			let tl = new TimelineMax({onComplete : this._onStartGame.bind(this) });
+		btn.on('pointerdown',async () => {
+			 await this.onStartWindowPointerDown();
+			
+			
+		
+		});	
+	}
+	
+	onStartWindowPointerDown(){
+		return new Promise( (res,rej) => {
+			let tl = new TimelineMax({onComplete : () => {
+					this._onStartGame();
+				} 
+			});
 			tl
 			.to(this._startWindow, 0.3, {y : this._startWindow.y + 50})
 			.to(this._startWindow, 0.3, {y : -(this._startWindow.height) });
-			
-		}.bind(this));	
+			res(tl);
+		}).catch((error) => {
+		  console.log("Timeline error Game onStartWindowPointerDown function");
+		});
+	
 	}
 	
 	_onStartGame(){
 		this._sniper.initSniper();
 		this.app.stage.removeChild(this._startWindow);
 		this._canvas = document.querySelector('canvas');
-		this._canvas.addEventListener('mousemove', this._onMouseMove.bind(this));
-		this._canvas.addEventListener('contextmenu', this._onContextMenu.bind(this), false);
-		this._canvas.addEventListener('click', this._onClick.bind(this), false);
+		this._canvas.addEventListener('mousemove',() => {
+			this._onMouseMove()
+		});
+		this._canvas.addEventListener('contextmenu',e => {
+			this._onContextMenu(e)
+		}, false);
+		this._canvas.addEventListener('click', e => {
+			this._onClick(e);
+		}, false);
 	}	
 
 	_onClick(e){
@@ -113,3 +143,4 @@ class Game{
 	}
 	
 }
+export default  Game;

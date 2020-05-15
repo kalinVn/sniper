@@ -1,3 +1,4 @@
+import * as PIXI from 'pixi.js';
 class Helper {
 
 	constructor(){
@@ -62,3 +63,4 @@ class Helper {
 	}
 
 }
+export default  Helper;

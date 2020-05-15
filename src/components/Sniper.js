@@ -1,3 +1,7 @@
+import Vector2D from "../components/Vector2D.js";
+import * as PIXI from 'pixi.js';
+import {gsap, TimelineMax, PixiPlugin} from "gsap/all";
+
 class Sniper {
 
 	constructor(app){
@@ -10,30 +14,54 @@ class Sniper {
 		this.mouseMovePosition = new Vector2D(0, 0); 
 		this._frame = 0;
 		this._frames = [];
+		gsap.registerPlugin(TimelineMax);
+		PixiPlugin.registerPIXI(PIXI)
+		gsap.registerPlugin(PixiPlugin);
 	}
 	
-	initSniper(){
-		this.app.loader.add("sniper", "./images/sniper.png").load(function(){
-			this._sniperTexture = this.app.loader.resources["sniper"].texture;
-			let width = 52.8;
-			let height = 63;
-			let x = 0;
-			let y = 0;
-			for(let i = 0; i < 8; i++ ){
-				this._frames.push(
-					new PIXI.Rectangle(i * width, 0, width, height),
-				);
-			}
-			this._sniperTexture.frame = this._frames[this._frame];
-			this.sprite = new PIXI.Sprite(this._sniperTexture);
-			this.sprite.anchor.set(0.26, 0.26);
-			this.sprite.x = 200;
-			this.sprite.y = 200;
-			this.app.stage.addChild(this.sprite);
-			this.position = new Vector2D(this.sprite.x, this.sprite.y);
-		}.bind(this) );	
-		
+	async initSniper(){
+		let loader = await this._loadSniperSprite();	
+		loader.onError.add((err) => {
+			console.log("Error sprite loading");
+		});
 	}
+	
+	_loadSniperSprite(){
+		let response = new Promise( (resolve, reject) => {
+			let loader = this.app.loader.add("sniper", "./src/images/sniper.png").load( async (resp) => {
+				this._sniperTexture = this.app.loader.resources["sniper"].texture;
+				
+				let width = 52.8;
+				let height = 63;
+				let x = 0;
+				let y = 0;
+				for(let i = 0; i < 8; i++ ){
+					this._frames.push(
+						new PIXI.Rectangle(i * width, 0, width, height),
+					);
+				}
+				this._sniperTexture.frame = this._frames[this._frame];
+				this.sprite = new PIXI.Sprite(this._sniperTexture);
+				this.sprite.anchor.set(0.26, 0.26);
+				this.sprite.x = 200;
+				this.sprite.y = 200;
+				this.app.stage.addChild(this.sprite);
+				this.position = new Vector2D(this.sprite.x, this.sprite.y);
+				
+			} );
+			resolve (loader);
+		}).then( (loader) => {
+			console.log("Sniper loaded");
+			return loader;
+		}).catch((error) => {
+			console.log("Sniper error Snper class _loadSniperSprite");
+		});
+		
+		return response;
+	
+	}
+	
+	
 	
 	_drawLaser(position){
 		if(this.laser){
@@ -131,3 +159,4 @@ class Sniper {
 
 
 }
+export default  Sniper;

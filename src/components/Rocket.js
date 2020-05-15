@@ -1,3 +1,5 @@
+import Vector2D from "../components/Vector2D.js";
+import * as PIXI from 'pixi.js';
 class Rocket {
 
 	constructor(app){
@@ -9,9 +11,12 @@ class Rocket {
 	
 	init(position, rotation, mousePosition ){
 		this.position = position;
-		let loader = new PIXI.loaders.Loader();
+		
+		let loader = new PIXI.Loader();
 		var id = "rocket";
-		loader.add(id, "./images/rocket.png").load(function(){
+		PIXI﻿.utils.clearTextureCache();
+		loader.reset();
+		loader.add(id, "./src/images/rocket.png").load(function(){
 			this._rocketTexture = loader.resources[id].texture;
 			let width = 26;
 			let height = 49;
@@ -57,9 +62,11 @@ class Rocket {
 	}
 	
 	_expolode(mousePosition){
-		let loader = new PIXI.loaders.Loader();
+		let loader = new PIXI.Loader();
 		let id = "explosion";
-		loader.add(id, "./images/explosion.png").load(function(){
+		PIXI﻿.utils.clearTextureCache();
+		loader.reset();
+		loader.add(id, "./src/images/explosion.png").load(function(){
 			this.app.stage.removeChild(this.sprite);
 			var explosionTexture = loader.resources[id].texture;
 			let width = 128;
@@ -97,3 +104,4 @@ class Rocket {
 	
 
 }
+export default  Rocket;
