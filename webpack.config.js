@@ -23,12 +23,20 @@ module.exports = {
 				
 			},
 			{
+				
+				test: /\.json/,
+				type: 'javascript/auto',
+				loader : 'json-loader'
+			},
+			{
 				test: /\.(png|jpg|svg|gif|jpeg)$/,
 				use : [
 					'file-loader'
 				]
 				
-			},
+			}
+			,
+			
 			{
 				test : /\.js$/,
 				exclude:/node-modules/,
@@ -45,6 +53,9 @@ module.exports = {
 	  open: true
 	},
 	plugins : [
+		
+    
+		
 		new HtmlWebPackPlugin({
 			template : "./src/index.html",
 			filename : "./index.html"

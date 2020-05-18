@@ -1,5 +1,6 @@
 import Vector2D from "../components/Vector2D.js";
 import * as PIXI from 'pixi.js';
+const rocketJson = require("../images/explosion.json");
 class Rocket {
 
 	constructor(app){
@@ -9,36 +10,65 @@ class Rocket {
 		this.position = new Vector2D(0, 0);
 	}
 	
-	init(position, rotation, mousePosition ){
+	async init(position, rotation, mousePosition ){
 		this.position = position;
 		
 		let loader = new PIXI.Loader();
 		var id = "rocket";
-		PIXI﻿.utils.clearTextureCache();
-		loader.reset();
-		loader.add(id, "./src/images/rocket.png").load(function(){
-			this._rocketTexture = loader.resources[id].texture;
-			let width = 26;
-			let height = 49;
-			let x = 0;
-			let y = 0;
-			for(let i = 0; i < 4; i++ ){
-				this._frames.push(
-					new PIXI.Rectangle(i * width, 0, width, height),
-				);
-			}
-			this._rocketTexture.frame = this._frames[this._frame];
-			this.sprite = new PIXI.Sprite(this._rocketTexture);
-			this.sprite.anchor.set(0, 0.5);
-			this.sprite.x = this.position.x;
-			this.sprite.y = this.position .y;
-			this.app.stage.addChild(this.sprite);
-			this.sprite.angle = rotation;
-			this.position = new Vector2D(this.sprite.x, this.sprite.y);
-			mousePosition = new Vector2D(mousePosition.x, mousePosition.y);
-			this._direction  = mousePosition.substract(this.position);
-			this._move(mousePosition);
-		}.bind(this));
+		let resp = await this._clearCache(loader)
+		let url = "./src/images/rocket.png";
+		let texture = await this._loadResource(resp, id, url)
+		this._rocketTexture = texture;
+		this._onRocketLoaded(mousePosition, rotation) ;
+	}
+	
+	_clearCache(loader){
+		return new Promise( (resolve, reject) => {
+			PIXI﻿.utils.clearTextureCache();
+			loader.reset();
+			resolve( loader);
+		});
+		
+	}
+	_onRocketLoaded(mousePosition, rotation) {
+		let width = 26;
+		let height = 49;
+		let x = 0;
+		let y = 0;
+		for(let i = 0; i < 4; i++ ){
+			this._frames.push(
+				new PIXI.Rectangle(i * width, 0, width, height),
+			);
+		}
+		this._rocketTexture.frame = this._frames[this._frame];
+		this.sprite = new PIXI.Sprite(this._rocketTexture);
+		this.sprite.anchor.set(0, 0.5);
+		this.sprite.x = this.position.x;
+		this.sprite.y = this.position .y;
+		this.app.stage.addChild(this.sprite);
+		this.sprite.angle = rotation;
+		this.position = new Vector2D(this.sprite.x, this.sprite.y);
+		mousePosition = new Vector2D(mousePosition.x, mousePosition.y);
+		this._direction  = mousePosition.substract(this.position);
+		this._move(mousePosition);
+	}
+	
+	_loadResource(loader, id, url) {
+		return  new Promise(  (resolve, reject) => {
+			let loadRocket = loader.add(id, url).load ( () => {
+				let texture = loader.resources[id].texture;
+				if(!texture){
+					texture = loader.resources[id].textures;
+
+				}
+				if(!loadRocket){
+					reject("Rocket is not loaded");
+				}else{
+					resolve(texture);
+				}
+			});
+		});
+	
 	}
 	
 	_move(mousePosition){
@@ -61,14 +91,9 @@ class Rocket {
 		requestAnimationFrame(this._move.bind(this, mousePosition));
 	}
 	
-	_expolode(mousePosition){
-		let loader = new PIXI.Loader();
-		let id = "explosion";
-		PIXI﻿.utils.clearTextureCache();
-		loader.reset();
-		loader.add(id, "./src/images/explosion.png").load(function(){
+	async _onRocketExplode(explosionTexture){
+		return new Promise( (resolve, reject) => {
 			this.app.stage.removeChild(this.sprite);
-			var explosionTexture = loader.resources[id].texture;
 			let width = 128;
 			let height = 128;
 			let x = 0;
@@ -86,11 +111,60 @@ class Rocket {
 			explosionSprite.x = this.position.x;
 			explosionSprite.y = this.position .y;
 			this.app.stage.addChild(explosionSprite);
-			this._animateExplosion(explosionTexture, frames, frame);
-		}.bind(this));
+			let response = {
+				explosionTexture : explosionTexture,
+				frames : frames,
+				frame : frame
+
+			}
+			resolve(response)
+		});
 	}
 	
-	_animateExplosion(explosionTexture, frames, frame){
+	async _expolode(mousePosition){
+	
+		let loader = new PIXI.Loader();
+		let id = "spritesheet";
+		let url = "./src/images/explosion.png";
+		//let loadRocket = loader.add(id, url).load ( (loader) => {
+			
+			 //var texture = PIXI.Texture.from('Explosion_1.png');
+			 // let treasureHunter = loader.resources[require('../images/explosion.json')].textures;
+			//console.log(texture);
+		//});
+		//return;
+		let resp = await this._clearCache(loader);
+		let explosionTexture = await this._loadResource(resp, id, url);
+		let respTexture = await this._onRocketExplode(explosionTexture) ;
+		await this._animateExplosion(respTexture.explosionTexture, respTexture.frames, respTexture.frame);
+		console.log(respTexture);
+		
+		return;
+		await this._clearCache(loader).then( async (resp) => {
+			let url = "./src/images/explosion.png";
+			await this._loadResource(resp, id, url).then( (explosionTexture) => {
+				
+				this._onRocketExplode(explosionTexture) 
+			});
+		});
+		
+		
+	}
+
+	async _loadResourceExplosion(loader, id, url){
+		return  new Promise(  (resolve, reject) => {
+			let loadRocket = loader.add(id, url).load ( (resp) => {
+				let explosionTexture = resp.resources[id].texture;
+				
+				this._onRocketExplode(explosionTexture) 
+				
+			});
+		});
+
+	}
+	
+	async _animateExplosion(explosionTexture, frames, frame){
+		
 		if(frame > frames.length - 1){
 			this.app.stage.removeChild(explosionTexture);
 			return;

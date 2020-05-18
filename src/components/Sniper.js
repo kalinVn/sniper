@@ -20,10 +20,14 @@ class Sniper {
 	}
 	
 	async initSniper(){
-		let loader = await this._loadSniperSprite();	
-		loader.onError.add((err) => {
-			console.log("Error sprite loading");
-		});
+		return new Promise( async (resolve,reject) => {
+			let loader = await this._loadSniperSprite();	
+			loader.onError.add((err) => {
+				console.log("Error sprite loading");
+			});
+			resolve(loader)
+			
+		})
 	}
 	
 	_loadSniperSprite(){
