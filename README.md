@@ -1,10 +1,12 @@
 # Simple sniper game
 
-1.Start game command : npm run game
+1.Build game : npm run build
 
-2. Left mouse click - You shoot
+2.Start game command : npm run game
 
-2. Right mouse click - You move
+3. Left mouse click - You shoot
 
-4. Mouser over - Rotate
+4. Right mouse click - You move
+
+5. Mouser over - Rotate
 	

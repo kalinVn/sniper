@@ -59,6 +59,7 @@ class Rocket {
 				let texture = loader.resources[id].texture;
 				if(!texture){
 					texture = loader.resources[id].textures;
+					console.log(texture);
 
 				}
 				if(!loadRocket){
@@ -136,18 +137,7 @@ class Rocket {
 		let resp = await this._clearCache(loader);
 		let explosionTexture = await this._loadResource(resp, id, url);
 		let respTexture = await this._onRocketExplode(explosionTexture) ;
-		await this._animateExplosion(respTexture.explosionTexture, respTexture.frames, respTexture.frame);
-		console.log(respTexture);
-		
-		return;
-		await this._clearCache(loader).then( async (resp) => {
-			let url = "./src/images/explosion.png";
-			await this._loadResource(resp, id, url).then( (explosionTexture) => {
-				
-				this._onRocketExplode(explosionTexture) 
-			});
-		});
-		
+		await this._animateExplosion(respTexture.explosionTexture, respTexture.frames, respTexture.frame);		
 		
 	}
 
